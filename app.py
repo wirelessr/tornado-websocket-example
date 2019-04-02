@@ -1,4 +1,5 @@
 from tornado import websocket, web, ioloop
+from tornado import httpserver
 import json
 
 cl = []
@@ -14,6 +15,9 @@ class SocketHandler(websocket.WebSocketHandler):
     def open(self):
         if self not in cl:
             cl.append(self)
+
+    def on_message(self, message):
+        self.write_message(u"You said: " + message)
 
     def on_close(self):
         if self in cl:
@@ -44,5 +48,10 @@ app = web.Application([
 ])
 
 if __name__ == '__main__':
-    app.listen(8888)
+    #app.listen(8888)
+    server = httpserver.HTTPServer(app, ssl_options={
+        'certfile': './cert.pem',
+        'keyfile': './key.pem',
+        })
+    server.listen(8888)
     ioloop.IOLoop.instance().start()
